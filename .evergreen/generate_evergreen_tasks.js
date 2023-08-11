@@ -1,7 +1,6 @@
 const fs = require('fs');
 const yaml = require('js-yaml');
 const semver = require('semver');
-const { mongoshTasks } = require('./generate_mongosh_tasks');
 
 const {
   MONGODB_VERSIONS,
@@ -40,7 +39,13 @@ const OPERATING_SYSTEMS = [
 }));
 
 // TODO: NODE-3060: enable skipped tests on windows except oidc (not supported)
-const WINDOWS_SKIP_TAGS = new Set(['atlas-connect', 'auth', 'load_balancer', 'socks5-csfle', 'oidc']);
+const WINDOWS_SKIP_TAGS = new Set([
+  'atlas-connect',
+  'auth',
+  'load_balancer',
+  'socks5-csfle',
+  'oidc'
+]);
 
 const TASKS = [];
 const SINGLETON_TASKS = [];
@@ -426,7 +431,9 @@ for (const {
   });
 
   for (const NODE_LTS_VERSION of testedNodeVersions) {
-    const nodeLTSCodeName = versions.find(({ versionNumber }) => versionNumber === NODE_LTS_VERSION).codeName;
+    const nodeLTSCodeName = versions.find(
+      ({ versionNumber }) => versionNumber === NODE_LTS_VERSION
+    ).codeName;
     const nodeLtsDisplayName = `Node${NODE_LTS_VERSION}`;
     const name = `${osName}-${NODE_LTS_VERSION >= 20 ? nodeLtsDisplayName : nodeLTSCodeName}`;
     const display_name = `${osDisplayName} ${nodeLtsDisplayName}`;
@@ -458,33 +465,33 @@ for (const {
 }
 
 // Running CSFLE tests with mongocryptd
-const MONGOCRYPTD_CSFLE_TASKS = MONGODB_VERSIONS
-  .filter(mongoVersion => ['latest', 'rapid'].includes(mongoVersion)
-    || semver.gte(`${mongoVersion}.0`, '4.2.0'))
-  .map((mongoVersion) => {
-    return {
-      name: `test-${mongoVersion}-csfle-mongocryptd`,
-      tags: [mongoVersion, 'sharded_cluster'],
-      commands: [
-        { func: 'install dependencies' },
-        {
-          func: 'bootstrap mongo-orchestration',
-          vars: {
-            VERSION: mongoVersion,
-            TOPOLOGY: 'sharded_cluster',
-            AUTH: 'auth'
-          }
-        },
-        { func: 'bootstrap kms servers' },
-        {
-          func: 'run tests',
-          vars: {
-            TEST_NPM_SCRIPT: 'check:csfle'
-          }
+const MONGOCRYPTD_CSFLE_TASKS = MONGODB_VERSIONS.filter(
+  mongoVersion =>
+    ['latest', 'rapid'].includes(mongoVersion) || semver.gte(`${mongoVersion}.0`, '4.2.0')
+).map(mongoVersion => {
+  return {
+    name: `test-${mongoVersion}-csfle-mongocryptd`,
+    tags: [mongoVersion, 'sharded_cluster'],
+    commands: [
+      { func: 'install dependencies' },
+      {
+        func: 'bootstrap mongo-orchestration',
+        vars: {
+          VERSION: mongoVersion,
+          TOPOLOGY: 'sharded_cluster',
+          AUTH: 'auth'
         }
-      ]
-    }
-  });
+      },
+      { func: 'bootstrap kms servers' },
+      {
+        func: 'run tests',
+        vars: {
+          TEST_NPM_SCRIPT: 'check:csfle'
+        }
+      }
+    ]
+  };
+});
 
 for (const nodeVersion of [LOWEST_LTS, LATEST_LTS]) {
   const name = `rhel8-node${nodeVersion}-test-csfle-mongocryptd`;
@@ -498,8 +505,7 @@ for (const nodeVersion of [LOWEST_LTS, LATEST_LTS]) {
       RUN_WITH_MONGOCRYPTD: true,
       NODE_LTS_VERSION: LOWEST_LTS
     },
-    tasks:
-      MONGOCRYPTD_CSFLE_TASKS.map(task => task.name)
+    tasks: MONGOCRYPTD_CSFLE_TASKS.map(task => task.name)
   });
 }
 
@@ -546,7 +552,6 @@ SINGLETON_TASKS.push(
     ...Array.from(makeTypescriptTasks())
   ]
 );
-
 
 function* makeTypescriptTasks() {
   for (const TS_VERSION of ['next', 'current', '4.1.6']) {
@@ -622,13 +627,6 @@ BUILD_VARIANTS.push({
   display_name: 'Generate Combined Coverage',
   run_on: DEFAULT_OS,
   tasks: ['download-and-merge-coverage']
-});
-
-BUILD_VARIANTS.push({
-  name: 'mongosh_integration_tests',
-  display_name: 'mongosh integration tests',
-  run_on: UBUNTU_OS,
-  tasks: mongoshTasks.map(({ name }) => name)
 });
 
 // special case for MONGODB-AWS authentication
@@ -765,9 +763,7 @@ BUILD_VARIANTS.push({
 
 // TODO(NODE-4575): unskip zstd and snappy on node 16
 for (const variant of BUILD_VARIANTS.filter(
-  variant =>
-    variant.expansions &&
-    [16, 18, 20].includes(variant.expansions.NODE_LTS_VERSION)
+  variant => variant.expansions && [16, 18, 20].includes(variant.expansions.NODE_LTS_VERSION)
 )) {
   variant.tasks = variant.tasks.filter(
     name => !['test-zstd-compression', 'test-snappy-compression'].includes(name)
@@ -784,7 +780,7 @@ for (const variant of BUILD_VARIANTS.filter(
 // TODO(NODE-5283): fix socks5 fle tests on node 20+
 for (const variant of BUILD_VARIANTS.filter(
   variant => variant.expansions && [20].includes(variant.expansions.NODE_LTS_VERSION)
-) ) {
+)) {
   variant.tasks = variant.tasks.filter(name => !['test-socks5-csfle'].includes(name));
 }
 
@@ -795,8 +791,7 @@ fileData.tasks = (fileData.tasks || [])
   .concat(SINGLETON_TASKS)
   .concat(AUTH_DISABLED_TASKS)
   .concat(AWS_LAMBDA_HANDLER_TASKS)
-  .concat(MONGOCRYPTD_CSFLE_TASKS)
-  .concat(mongoshTasks);
+  .concat(MONGOCRYPTD_CSFLE_TASKS);
 
 fileData.buildvariants = (fileData.buildvariants || []).concat(BUILD_VARIANTS);
 
