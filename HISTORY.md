@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.9.1](https://github.com/mongodb/node-mongodb-native/compare/v5.9.0...v5.9.1) (2023-10-06)
+
+
+### Bug Fixes
+
+* **NODE-5627:** BulkWriteResult.insertedIds includes ids that were not inserted ([#3870](https://github.com/mongodb/node-mongodb-native/issues/3870)) ([d766ae2](https://github.com/mongodb/node-mongodb-native/commit/d766ae22f3cfc6679ee3f7c068ebb8596beb4331))
+
 ## [5.9.0](https://github.com/mongodb/node-mongodb-native/compare/v5.8.1...v5.9.0) (2023-09-14)
 
 
