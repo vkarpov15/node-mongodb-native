@@ -40,7 +40,8 @@ export {
 export {
   type AnyBulkWriteOperation,
   type BulkWriteOptions,
-  MongoBulkWriteError
+  MongoBulkWriteError,
+  BulkWriteResult
 } from './bulk/common';
 export { ClientEncryption } from './client-side-encryption/client_encryption';
 export { ChangeStreamCursor } from './cursor/change_stream_cursor';
